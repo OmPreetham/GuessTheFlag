@@ -9,11 +9,20 @@ import SwiftUI
 
 struct FlagImageView: View {
     let imageName: String
+    let rotation: Double
+    let opacity: Double
+    let scale: Double
     
     var body: some View {
         Image(imageName)
             .clipShape(.buttonBorder)
             .shadow(radius: 5)
+            .rotation3DEffect(.degrees(rotation), axis: (x: 0.0, y: 1.0, z: 0.0))
+            .opacity(opacity)
+            .scaleEffect(scale)
+            .animation(.easeInOut(duration: 1), value: rotation)
+            .animation(.easeInOut(duration: 1), value: opacity)
+            .animation(.easeInOut(duration: 1), value: scale)
     }
 }
 
@@ -29,6 +38,11 @@ struct ContentView: View {
     @State private var finalScore = 0
     @State private var numberOfQuestions = 1
     
+    @State private var rotationAmounts = [0.0, 0.0, 0.0]
+    @State private var opacityAmounts = [1.0, 1.0, 1.0]
+    @State private var scaleAmounts = [1.0, 1.0, 1.0]
+
+
     var body: some View {
         ZStack {
             LinearGradient(colors: [.blue, .black], startPoint: .top, endPoint: .bottom)
@@ -66,7 +80,7 @@ struct ContentView: View {
                         Button {
                             flagTapped(number)
                         } label: {
-                            FlagImageView(imageName: countries[number])
+                            FlagImageView(imageName: countries[number], rotation: rotationAmounts[number], opacity: opacityAmounts[number], scale: scaleAmounts[number])
                         }
                     }
                     .alert(scoreTitle, isPresented: $showingScore) {
@@ -80,7 +94,6 @@ struct ContentView: View {
                         Text("Your Final Score: \(finalScore)")
                             .font(.largeTitle.bold())
                     }
-
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 20)
@@ -111,7 +124,13 @@ struct ContentView: View {
         } else {
             scoreTitle = "Wrong, That's the flag of \(countries[number])"
         }
-
+        rotationAmounts[number] += 360
+        for i in 0..<opacityAmounts.count {
+            opacityAmounts[i] = i == number ? 1.0 : 0.25
+        }
+        for i in 0..<scaleAmounts.count {
+            scaleAmounts[i] = i == number ? 1.0 : 0.8
+        }
         showingScore = true
     }
     
@@ -126,6 +145,8 @@ struct ContentView: View {
             countries.shuffle()
             correctAnswer = Int.random(in: 0...2)
             numberOfQuestions += 1
+            opacityAmounts = [1.0, 1.0, 1.0]
+            scaleAmounts = [1.0, 1.0, 1.0]
         }
     }
 }
